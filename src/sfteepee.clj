@@ -42,13 +42,15 @@
   (.chown *conn* uid path))
 
 (defn ls
-  ([] (ls (pwd)))
-  ([path]
-     (map
-      (fn [x] {:attrs (.getAttrs x)
-               :filename (.getFilename x)
-               :longname (.getLongname x)})
-      (.ls *conn* path))))
+  ([] (ls (pwd) #".*"))
+  ([path] (ls path #".*"))
+  ([path regex]
+     (let [entries (map
+                    (fn [x] {:attrs (.getAttrs x)
+                             :filename (.getFilename x)
+                             :longname (.getLongname x)})
+                    (.ls *conn* path))]
+       (filter (fn [item] (re-matches regex (:filename  item))) entries))))
 
 (defn put
   ([src]
