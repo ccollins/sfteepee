@@ -1,4 +1,4 @@
-(defproject sfteepee "0.1.0-SNAPSHOT"
+(defproject sfteepee "0.2.0-SNAPSHOT"
   :description "A clojure wrapper for Jsch SFTP"
   :dependencies [[org.clojure/clojure "1.1.0-master-SNAPSHOT"]
                  [com.jcraft/jsch "0.1.42"]]
