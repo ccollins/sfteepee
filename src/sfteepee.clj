@@ -68,8 +68,5 @@
 (defn rm [path]
   (.rm *conn* path))
 
-(defn rename [src dest]
-  (.rename *conn* src dest))
-
 (defn move [src dest]
-  (rename src dest))
+  (.rename *conn* src dest))
