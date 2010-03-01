@@ -65,9 +65,6 @@
   ([src dest]
      (.get *conn* src dest)))
 
-(defn copy [src dest]
-  (.get *conn* src dest))
-
 (defn rm [path]
   (.rm *conn* path))
 
@@ -75,5 +72,4 @@
   (.rename *conn* src dest))
 
 (defn move [src dest]
-  (copy *conn* src dest)
-  (rm *conn* src))
+  (rename src dest))
