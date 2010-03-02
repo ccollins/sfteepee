@@ -1,45 +1,47 @@
 (ns sfteepee
   (:import [com.jcraft.jsch JSch]))
 
-(declare *conn*)
+(declare *channel*)
+(declare *session*)
 
 (defn connect [user password host port]
-  (let [session (-> (new com.jcraft.jsch.JSch) (.getSession user host port))]
-    (doto session
+  (def *session* (-> (new com.jcraft.jsch.JSch) (.getSession user host port)))
+  (doto *session*
        (.setConfig "StrictHostKeyChecking" "no")
        (.setPassword password)
        (.connect))
-    (def *conn* (doto (.openChannel session "sftp") (.connect)))))
+  (def *channel* (doto (.openChannel *session* "sftp") (.connect))))
 
 (defn disconnect []
-  (.disconnect *conn*))
+  (.disconnect *channel*)
+  (.disconnect *session*))
 
 (defn pwd []
-  (.pwd *conn*))
+  (.pwd *channel*))
 
 (defn lpwd []
-  (.lpwd *conn*))
+  (.lpwd *channel*))
 
 (defn cd [path]
-  (.cd *conn* path))
+  (.cd *channel* path))
 
 (defn lcd [path]
-  (.lcd *conn* path))
+  (.lcd *channel* path))
 
 (defn mkdir [path]
-  (.mkdir *conn* path))
+  (.mkdir *channel* path))
 
 (defn rmdir [path]
-  (.rmdir *conn* path))
+  (.rmdir *channel* path))
 
 (defn chgrp [gid path]
-  (.chgrp *conn* gid path))
+  (.chgrp *channel* gid path))
 
 (defn chmod [perms path]
-  (.chmod *conn* perms path))
+  (.chmod *channel* perms path))
 
 (defn chown [uid path]
-  (.chown *conn* uid path))
+  (.chown *channel* uid path))
 
 (defn ls
   ([] (ls (pwd) #".*"))
@@ -49,24 +51,24 @@
                     (fn [x] {:attrs (.getAttrs x)
                              :filename (.getFilename x)
                              :longname (.getLongname x)})
-                    (.ls *conn* path))]
+                    (.ls *channel* path))]
        (filter (fn [item] (re-matches regex (:filename  item))) entries))))
 
 (defn put
   ([src]
-     (.put *conn* src))
+     (.put *channel* src))
   ([src dest]
-     (.put *conn* src dest)))
+     (.put *channel* src dest)))
 
 (defn grab
   ([src]
-     (.get *conn* src
+     (.get *channel* src
            (str (lpwd) "/" (:filename (first (ls src))))))
   ([src dest]
-     (.get *conn* src dest)))
+     (.get *channel* src dest)))
 
 (defn rm [path]
-  (.rm *conn* path))
+  (.rm *channel* path))
 
 (defn move [src dest]
-  (.rename *conn* src dest))
+  (.rename *channel* src dest))
