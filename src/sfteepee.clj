@@ -3,20 +3,19 @@
   (:import [com.jcraft.jsch JSch]))
 
 (defvar *channel*)
-(defvar *session*)
 
 (defmacro with-connection [user password host port & body]
-  `(binding [*session* (doto (.getSession (JSch.) ~user ~host ~port)
-                        (.setConfig "StrictHostKeyChecking" "no")
-                        (.setPassword ~password)
-                        (.connect))]
-    (binding [*channel* (doto (.openChannel *session* "sftp")
-                          (.connect))]
-      (try
-        ~@body
-        (finally
-         (.disconnect *channel*)
-         (.disconnect *session*))))))
+  `(let [session# (doto (.getSession (JSch.) ~user ~host ~port)
+                    (.setConfig "StrictHostKeyChecking" "no")
+                    (.setPassword ~password)
+                    (.connect))]
+     (binding [*channel* (doto (.openChannel session# "sftp")
+                           (.connect))]
+       (try
+         ~@body
+         (finally
+          (.disconnect *channel*)
+          (.disconnect session#))))))
 
 (defn pwd []
   (.pwd *channel*))
