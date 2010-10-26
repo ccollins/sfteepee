@@ -1,6 +1,6 @@
 pom.xml
 Manifest.txt
-sfteepee.jar
+*.jar
 lib
 classes
 autodoc
