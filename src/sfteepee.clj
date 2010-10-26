@@ -1,20 +1,22 @@
 (ns sfteepee
+  (:use [clojure.contrib.def :only [defvar]])
   (:import [com.jcraft.jsch JSch]))
 
-(declare *channel*)
-(declare *session*)
+(defvar *channel*)
+(defvar *session*)
 
-(defn connect [user password host port]
-  (def *session* (-> (new com.jcraft.jsch.JSch) (.getSession user host port)))
-  (doto *session*
-       (.setConfig "StrictHostKeyChecking" "no")
-       (.setPassword password)
-       (.connect))
-  (def *channel* (doto (.openChannel *session* "sftp") (.connect))))
-
-(defn disconnect []
-  (.disconnect *channel*)
-  (.disconnect *session*))
+(defmacro with-connection [user password host port & body]
+  `(binding [*session* (doto (.getSession (JSch.) ~user ~host ~port)
+                        (.setConfig "StrictHostKeyChecking" "no")
+                        (.setPassword ~password)
+                        (.connect))]
+    (binding [*channel* (doto (.openChannel *session* "sftp")
+                          (.connect))]
+      (try
+        ~@body
+        (finally
+         (.disconnect *channel*)
+         (.disconnect *session*))))))
 
 (defn pwd []
   (.pwd *channel*))
@@ -49,8 +51,8 @@
   ([path regex]
      (let [entries (map
                     (fn [x] {:attrs (.getAttrs x)
-                             :filename (.getFilename x)
-                             :longname (.getLongname x)})
+                            :filename (.getFilename x)
+                            :longname (.getLongname x)})
                     (.ls *channel* path))]
        (filter (fn [item] (re-matches regex (:filename  item))) entries))))
 
