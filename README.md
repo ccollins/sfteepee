@@ -41,10 +41,11 @@ Examples
       (cd "somewhere")
       (grab "aFile.txt"))
 
-Available options:
- * user
- * password
- * keyfile
- * passphrase
- * host
- * port (default 22)
+Available options
+----------
+* user
+* password
+* keyfile
+* passphrase
+* host
+* port (default 22)
