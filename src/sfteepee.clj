@@ -4,18 +4,31 @@
 
 (defvar *channel*)
 
-(defmacro with-connection [user password host port & body]
-  `(let [session# (doto (.getSession (JSch.) ~user ~host ~port)
-                    (.setConfig "StrictHostKeyChecking" "no")
-                    (.setPassword ~password)
-                    (.connect))]
-     (binding [*channel* (doto (.openChannel session# "sftp")
-                           (.connect))]
-       (try
-         ~@body
-         (finally
-          (.disconnect *channel*)
-          (.disconnect session#))))))
+(defmacro with-connection [opts & body]
+  `(let [user# (:user ~opts)
+         password# (:password ~opts)
+         keyfile# (:keyfile ~opts)
+         passphrase# (:passphrase ~opts)
+         host# (:host ~opts)
+         port# (:port ~opts)]
+     (let [jsch# (JSch.)]
+       (if-not (nil? keyfile#)
+         (if-not (nil? passphrase#)
+           (let [bytes# (.getBytes passphrase#)]
+             (.addIdentity jsch# keyfile# bytes#))
+           (.addIdentity jsch# keyfile#)))
+       (let [session# (.getSession jsch# user# host# port#)]
+         (.setConfig session# "StrictHostKeyChecking" "no")
+         (if-not (nil? password#)
+           (.setPassword session# password#))
+         (.connect session#)
+         (binding [*channel* (doto (.openChannel session# "sftp")
+                               (.connect))]
+           (try
+             ~@body
+             (finally
+              (.disconnect *channel*)
+              (.disconnect session#))))))))
 
 (defn pwd []
   (.pwd *channel*))
