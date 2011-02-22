@@ -42,9 +42,9 @@ Examples
       (grab "aFile.txt"))
 
 Available options:
-* user
-* password
-* keyfile
-* passphrase
-* host
-* port (default 22)
+ * user
+ * password
+ * keyfile
+ * passphrase
+ * host
+ * port (default 22)
